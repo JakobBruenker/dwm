@@ -1,7 +1,11 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int gappx     = 30;	/* useless gap*/
+#define hsize 5 /* number of columns of tags */
+#define vsize 5 /* number of rows of tags */
+
+static const Bool focusonwheelscroll = False;
+static const unsigned int gappx     = 30;       /* useless gap*/
 static const unsigned int borderpx  = 0;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 0;        /* 0 means no bar */
@@ -20,7 +24,7 @@ static const char *colors[SchemeLast][3]      = {
 };
 
 /* tagging */
-static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char *tags[hsize * vsize];
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -28,8 +32,8 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "PHONY",     NULL,       NULL,       0,            1,           -1 }, // necessary for compilation
-	//{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+	/* nessecary for compilation */
+	{ "PHONY",     NULL,       NULL,       0,            1,           -1 },
 };
 
 /* layout(s) */
@@ -53,7 +57,7 @@ static const Layout layouts[] = {
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
-#define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
+#define SHCMD(cmd) { .v = (const char*[]){ "/bin/zsh", "-c", cmd, NULL } }
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
@@ -65,14 +69,12 @@ static Key keys[] = {
 	{ MODKEY,                       XK_r,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
-	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
-	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
-	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
+	{ MODKEY,                       XK_n,      focusstack,     {.i = +1 } },
+	{ MODKEY,                       XK_t,      focusstack,     {.i = -1 } },
+	{ MODKEY,                       XK_g,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
 	{ MODKEY,                       XK_Return, zoom,           {0} },
-	{ MODKEY,                       XK_Tab,    view,           {0} },
+	{ MODKEY,                       XK_m, focusmaster,           {0} },
 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
@@ -91,6 +93,14 @@ static Key keys[] = {
 	TAGKEYS(                        XK_asterisk,                      6)
 	TAGKEYS(                        XK_parenright,                      7)
 	TAGKEYS(                        XK_plus,                      8)
+	{ MODKEY,                       XK_Right,      viewright,        {0} },
+	{ MODKEY,                       XK_Left,      viewleft,        {0} },
+	{ MODKEY,                       XK_Down,      viewdown,        {0} },
+	{ MODKEY,                       XK_Up,      viewup,        {0} },
+	{ MODKEY|ShiftMask,             XK_Right,      tagright,        {0} },
+	{ MODKEY|ShiftMask,             XK_Left,      tagleft,        {0} },
+	{ MODKEY|ShiftMask,             XK_Down,      tagdown,        {0} },
+	{ MODKEY|ShiftMask,             XK_Up,      tagup,        {0} },
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
 };
 
