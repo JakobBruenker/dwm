@@ -1288,8 +1288,8 @@ recttomon(int x, int y, int w, int h)
 void
 resize(Client *c, int x, int y, int w, int h, int interact)
 {
-	if (applysizehints(c, &x, &y, &w, &h, interact))
-		resizeclient(c, x, y, w, h);
+	applysizehints(c, &x, &y, &w, &h, interact);
+	resizeclient(c, x, y, w, h);
 }
 
 void
