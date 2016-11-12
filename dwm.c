@@ -179,8 +179,8 @@ static long getstate(Window w);
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
-/* static void incnmaster(const Arg *arg); */
 static void keypress(XEvent *e);
+static void keyrelease(XEvent *e);
 static void killclient(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
 static void mappingnotify(XEvent *e);
@@ -275,6 +275,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 	[Expose] = expose,
 	[FocusIn] = focusin,
 	[KeyPress] = keypress,
+	[KeyRelease] = keyrelease,
 	[MappingNotify] = mappingnotify,
 	[MapRequest] = maprequest,
 	[MotionNotify] = motionnotify,
@@ -1009,6 +1010,9 @@ grabkeys(void)
 		KeyCode code;
 
 		XUngrabKey(dpy, AnyKey, AnyModifier, root);
+		/* grab left alt */
+		XGrabKey(dpy, XKeysymToKeycode(dpy, XK_Alt_L), ControlMask, root, True, GrabModeAsync, GrabModeAsync);
+		XGrabKey(dpy, XKeysymToKeycode(dpy, XK_Alt_L), 0, root, True, GrabModeAsync, GrabModeAsync);
 		for (i = 0; i < LENGTH(keys); i++)
 			if ((code = XKeysymToKeycode(dpy, keys[i].keysym)))
 				for (j = 0; j < LENGTH(modifiers); j++)
@@ -1037,6 +1041,21 @@ isuniquegeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info)
 	return 1;
 }
 #endif /* XINERAMA */
+
+void
+keyrelease(XEvent *e)
+{
+	KeySym keysym;
+	XKeyEvent *ev;
+	ev = &e->xkey;
+	keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
+	if (keysym == XK_Alt_L) {
+		selmon->showbar = False;
+		updatebarpos(selmon);
+		XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, barwidth, bh);
+		arrange(selmon);
+	}
+}
 
 void
 keypress(XEvent *e)
@@ -1730,6 +1749,10 @@ tag(const Arg *arg)
 void
 tagnumtag(void)
 {
+	selmon->showbar = True;
+	updatebarpos(selmon);
+	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, barwidth, bh);
+	arrange(selmon);
 	unsigned int tagnum = 0;
 	tagnum += selmon->tagnumv;
 	tagnum *= hsize;
@@ -2213,6 +2236,10 @@ view(const Arg *arg)
 void
 tagnumview(void)
 {
+	selmon->showbar = True;
+	updatebarpos(selmon);
+	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, barwidth, bh);
+	arrange(selmon);
 	unsigned int tagnum = 0;
 	tagnum += selmon->tagnumv;
 	tagnum *= hsize;

@@ -4,7 +4,6 @@
 #define hsize 5 /* number of columns of tags */
 #define vsize 5 /* number of rows of tags */
 
-static const Bool focusonwheelscroll = False;
 static const unsigned int gappx     = 30;       /* useless gap*/
 static const unsigned int borderpx  = 0;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
@@ -16,7 +15,7 @@ static const char col_gray1[]       = "#000000";
 static const char col_gray2[]       = "#586e75";
 static const char col_gray3[]       = "#93a1a1";
 static const char col_gray4[]       = "#eee8d5";
-static const char col_cyan[]        = "#111111";
+static const char col_cyan[]        = "#333333";
 static const char *colors[SchemeLast][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
@@ -97,10 +96,10 @@ static Key keys[] = {
 	{ MODKEY,                       XK_Left,      viewleft,        {0} },
 	{ MODKEY,                       XK_Down,      viewdown,        {0} },
 	{ MODKEY,                       XK_Up,      viewup,        {0} },
-	{ MODKEY|ShiftMask,             XK_Right,      tagright,        {0} },
-	{ MODKEY|ShiftMask,             XK_Left,      tagleft,        {0} },
-	{ MODKEY|ShiftMask,             XK_Down,      tagdown,        {0} },
-	{ MODKEY|ShiftMask,             XK_Up,      tagup,        {0} },
+	{ MODKEY|ControlMask,           XK_Right,      tagright,        {0} },
+	{ MODKEY|ControlMask,           XK_Left,      tagleft,        {0} },
+	{ MODKEY|ControlMask,           XK_Down,      tagdown,        {0} },
+	{ MODKEY|ControlMask,           XK_Up,      tagup,        {0} },
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
 };
 
