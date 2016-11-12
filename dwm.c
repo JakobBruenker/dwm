@@ -222,6 +222,7 @@ static void tagup(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *);
 static void togglebar(const Arg *arg);
+static void showbarnow(void);
 static void togglefloating(const Arg *arg);
 //static void toggletag(const Arg *arg);
 //static void toggleview(const Arg *arg);
@@ -389,6 +390,7 @@ attach(Client *c)
 {
 	c->next = c->mon->clients;
 	c->mon->clients = c;
+	c->tag = selmon->seltag;
 }
 
 void
@@ -698,6 +700,7 @@ drawbar(Monitor *m)
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
 	Client *c;
+	unsigned int numC[hsize * vsize] = {0};
 
 	/* draw status first so it can be overdrawn by tags later */
 	//if (m == selmon) { /* status is only drawn on selected monitor */
@@ -707,9 +710,7 @@ drawbar(Monitor *m)
 	//}
 
 	for (c = m->clients; c; c = c->next) {
-		occ = c->tag;
-		if (c->isurgent)
-			urg = c->tag;
+		numC[c->tag]++;
 	}
 	x = 0;
 	y = 0;
@@ -717,10 +718,10 @@ drawbar(Monitor *m)
 		w = TEXTW(tags[i]);
 		drw_setscheme(drw, scheme[m->seltag == i ? SchemeSel : SchemeNorm]);
 		drw_text(drw, x, y, w, bh/vsize, lrpad / 2, tags[i], urg & 1 << i);
-		if (occ == i)
+		if (numC[i] > 0)
 			drw_rect(drw, x + boxs, boxs + y, boxw, boxw,
 			         m == selmon && selmon->sel && selmon->sel->tag == i,
-			         urg == i);
+			         False);
 		x = (x + w) % (w * hsize);
 		if (x == 0) {
 			y = y + bh/5;
@@ -1712,15 +1713,14 @@ tag(const Arg *arg)
 void
 tagnumtag(void)
 {
-	selmon->showbar = True;
-	updatebarpos(selmon);
-	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, barwidth, bh);
-	arrange(selmon);
+	showbarnow();
 	unsigned int tagnum = 0;
 	tagnum += selmon->tagnumv;
 	tagnum *= hsize;
 	tagnum += selmon->tagnumh;
-	selmon->sel->tag = tagnum;
+	if (selmon->sel) {
+		selmon->sel->tag = tagnum;
+	}
 	selmon->seltag = tagnum;
 	arrange(selmon);
 }
@@ -1772,6 +1772,7 @@ tagright(const Arg *arg)
 		selmon->tagnumh++;
 		tagnumtag();
 	}
+	showbarnow();
 }
 
 void
@@ -1781,6 +1782,7 @@ tagleft(const Arg *arg)
 		selmon->tagnumh--;
 		tagnumtag();
 	}
+	showbarnow();
 }
 
 void
@@ -1790,6 +1792,7 @@ tagdown(const Arg *arg)
 		selmon->tagnumv++;
 		tagnumtag();
 	}
+	showbarnow();
 }
 
 void
@@ -1799,6 +1802,7 @@ tagup(const Arg *arg)
 		selmon->tagnumv--;
 		tagnumtag();
 	}
+	showbarnow();
 }
 
 void
@@ -1839,6 +1843,15 @@ void
 togglebar(const Arg *arg)
 {
 	selmon->showbar = !selmon->showbar;
+	updatebarpos(selmon);
+	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, barwidth, bh);
+	arrange(selmon);
+}
+
+void
+showbarnow(void)
+{
+	selmon->showbar = True;
 	updatebarpos(selmon);
 	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, barwidth, bh);
 	arrange(selmon);
@@ -2189,10 +2202,7 @@ updatewmhints(Client *c)
 void
 tagnumview(void)
 {
-	selmon->showbar = True;
-	updatebarpos(selmon);
-	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, barwidth, bh);
-	arrange(selmon);
+	showbarnow();
 	unsigned int tagnum = 0;
 	tagnum += selmon->tagnumv;
 	tagnum *= hsize;
@@ -2249,6 +2259,7 @@ viewright(const Arg *arg)
 		selmon->tagnumh++;
 		tagnumview();
 	}
+	showbarnow();
 }
 
 void
@@ -2258,6 +2269,7 @@ viewleft(const Arg *arg)
 		selmon->tagnumh--;
 		tagnumview();
 	}
+	showbarnow();
 }
 
 void
@@ -2267,6 +2279,7 @@ viewdown(const Arg *arg)
 		selmon->tagnumv++;
 		tagnumview();
 	}
+	showbarnow();
 }
 
 void
@@ -2276,6 +2289,7 @@ viewup(const Arg *arg)
 		selmon->tagnumv--;
 		tagnumview();
 	}
+	showbarnow();
 }
 
 Client *
