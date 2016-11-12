@@ -45,6 +45,8 @@
 #include "util.h"
 
 /* macros */
+#define hsize 12 /* number of columns of tags */
+#define vsize 12 /* number of rows of tags */
 #define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask) & (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
 #define INTERSECT(x,y,w,h,m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
@@ -122,7 +124,7 @@ struct Monitor {
 	unsigned int seltag;
 	unsigned int tagnumh;
 	unsigned int tagnumv;
-	//unsigned int taglt[hsize * vsize];
+	int taglt[hsize * vsize];
 	unsigned int sellt;
 	unsigned int tagset[2];
 	int showbar;
@@ -294,8 +296,6 @@ static Window root;
 /* configuration, allows nested code to access above variables */
 #include "config.h"
 
-/* compile-time check if all tags fit into an unsigned int bit array. */
-struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 /* function implementations */
 int
 applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact)
@@ -329,7 +329,7 @@ applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact)
 		*h = bh;
 	if (*w < bh)
 		*w = bh;
-	if (resizehints || c->isfloating || !c->mon->lt[c->mon->sellt]->arrange) {
+	if (resizehints) {
 		/* see last two sentences in ICCCM 4.1.2.3 */
 		baseismin = c->basew == c->minw && c->baseh == c->minh;
 		if (!baseismin) { /* temporarily remove base dimensions */
@@ -380,9 +380,9 @@ arrange(Monitor *m)
 void
 arrangemon(Monitor *m)
 {
-	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
-	if (m->lt[m->sellt]->arrange)
-		m->lt[m->sellt]->arrange(m);
+	//strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
+	if (layouts[m->taglt[m->seltag]].arrange)
+		layouts[m->taglt[m->seltag]].arrange(m);
 }
 
 void
@@ -641,6 +641,9 @@ createmon(void)
 	m->lt[0] = &layouts[0];
 	m->lt[1] = &layouts[1 % LENGTH(layouts)];
 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
+	for (int i = 0; i < hsize * vsize; i++) {
+		m->taglt[i] = 0;
+	}
 	return m;
 }
 
@@ -718,7 +721,11 @@ drawbar(Monitor *m)
 		w = TEXTW(tags[i]);
 		drw_setscheme(drw, scheme[m->seltag == i ? SchemeSel : SchemeNorm]);
 		drw_text(drw, x, y, w, bh/vsize, lrpad / 2, tags[i], urg & 1 << i);
-		if (numC[i] == 1) {
+		if (selmon->taglt[i] && numC[i]) {
+			drw_rect(drw, x + 1, y + 1, boxw + 2, boxh + 2,
+			         m == selmon && selmon->sel && selmon->sel->tag == i,
+			         False);
+		} else if (numC[i] == 1) {
 			drw_rect(drw, x + 2, y + 2, boxw, boxh,
 			         m == selmon && selmon->sel && selmon->sel->tag == i,
 			         False);
@@ -751,7 +758,7 @@ drawbar(Monitor *m)
 		}
 		x = (x + w) % (w * hsize);
 		if (x == 0) {
-			y = y + bh/5;
+			y = y + bh / vsize;
 		}
 	}
 	//w = blw = TEXTW(m->ltsymbol);
@@ -1354,13 +1361,13 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	for (n = 0, nbc = nexttiled(selmon->clients); nbc; nbc = nexttiled(nbc->next), n++);
 
 	/* Do nothing if layout is floating */
-	if (c->isfloating || selmon->lt[selmon->sellt]->arrange == NULL) {
+	if (c->isfloating) {
 		gapincr = gapoffset = 0;
 	} else {
 		/* Remove border and gap if layout is monocle or only one client */
 		/* if (selmon->lt[selmon->sellt]->arrange == monocle || n == 1) { */
 		/* Remove border and gap if layout is monocle */
-		if (selmon->lt[selmon->sellt]->arrange == monocle) {
+		if (selmon->taglt[selmon->seltag]) {
 			gapoffset = 0;
 			gapincr = -2 * borderpx;
 			wc.border_width = 0;
@@ -1376,7 +1383,7 @@ resizeclient(Client *c, int x, int y, int w, int h)
 	c->oldh = c->h; c->h = wc.height = h - gapincr;
 
 	/* increase width if client is master, and there is more than one window */
-	if (!(selmon->lt[selmon->sellt]->arrange == monocle || n == 1)) {
+	if (!(selmon->taglt[selmon->seltag] || n == 1)) {
 		if (c == nexttiled(selmon->clients)) {
 			c->w = wc.width = w - gapoffset;
 		}
@@ -1600,11 +1607,7 @@ setfullscreen(Client *c, int fullscreen)
 void
 setlayout(const Arg *arg)
 {
-	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
-		selmon->sellt ^= 1;
-	if (arg && arg->v)
-		selmon->lt[selmon->sellt] = (Layout *)arg->v;
-	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
+	selmon->taglt[selmon->seltag] = !selmon->taglt[selmon->seltag];
 	if (selmon->sel)
 		arrange(selmon);
 	else

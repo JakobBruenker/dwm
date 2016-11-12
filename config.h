@@ -1,8 +1,6 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-#define hsize 5 /* number of columns of tags */
-#define vsize 5 /* number of rows of tags */
 #define MODKEY Mod1Mask
 
 static const unsigned int gappx     = 30;       /* useless gap*/
@@ -67,7 +65,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
 	{ MODKEY,                       XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_m, focusmaster,           {0} },
-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
+	{ MODKEY|ControlMask,           XK_c,      killclient,     {0} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
