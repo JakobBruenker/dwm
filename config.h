@@ -31,7 +31,7 @@ static const Rule rules[] = {
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	/* nessecary for compilation */
-	{ "PHONY",     NULL,       NULL,       0,            1,           -1 },
+	{ ".PHONY",     NULL,       NULL,       0,            1,           -1 },
 };
 
 /* layout(s) */
@@ -58,13 +58,12 @@ static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_r,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ControlMask,           XK_Return, spawn,          {.v = termcmd } },
-	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_n,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_t,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_g,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
 	{ MODKEY,                       XK_Return, zoom,           {0} },
-	{ MODKEY,                       XK_m, focusmaster,           {0} },
+	{ MODKEY,                       XK_m,      focusmaster,    {0} },
 	{ MODKEY|ControlMask,           XK_c,      killclient,     {0} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
@@ -72,14 +71,14 @@ static Key keys[] = {
 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
-	{ MODKEY,                       XK_Right,      viewright,        {0} },
-	{ MODKEY,                       XK_Left,      viewleft,        {0} },
-	{ MODKEY,                       XK_Down,      viewdown,        {0} },
-	{ MODKEY,                       XK_Up,      viewup,        {0} },
-	{ MODKEY|ControlMask,           XK_Right,      tagright,        {0} },
-	{ MODKEY|ControlMask,           XK_Left,      tagleft,        {0} },
-	{ MODKEY|ControlMask,           XK_Down,      tagdown,        {0} },
-	{ MODKEY|ControlMask,           XK_Up,      tagup,        {0} },
+	{ MODKEY,                       XK_Right,  viewright,      {.i = 0 } },
+	{ MODKEY,                       XK_Left,   viewleft,       {.i = 0 } },
+	{ MODKEY,                       XK_Down,   viewdown,       {.i = 0 } },
+	{ MODKEY,                       XK_Up,     viewup,         {.i = 0 } },
+	{ MODKEY|ControlMask,           XK_Right,  tagright,       {.i = 0 } },
+	{ MODKEY|ControlMask,           XK_Left,   tagleft,        {.i = 0 } },
+	{ MODKEY|ControlMask,           XK_Down,   tagdown,        {.i = 0 } },
+	{ MODKEY|ControlMask,           XK_Up,     tagup,          {.i = 0 } },
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
 };
 

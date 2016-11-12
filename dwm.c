@@ -211,7 +211,6 @@ static void setup(void);
 static void showhide(Client *c);
 static void sigchld(int unused);
 static void spawn(const Arg *arg);
-//static void tag(const Arg *arg);
 static void tagnumtag(void);
 static void tagrightwrap(const Arg *arg);
 static void tagleftwrap(const Arg *arg);
@@ -223,11 +222,8 @@ static void tagdown(const Arg *arg);
 static void tagup(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *);
-static void togglebar(const Arg *arg);
 static void showbarnow(void);
 static void togglefloating(const Arg *arg);
-//static void toggletag(const Arg *arg);
-//static void toggleview(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
 static void unmanage(Client *c, int destroyed);
 static void unmapnotify(XEvent *e);
@@ -241,7 +237,6 @@ static void updatestatus(void);
 static void updatewindowtype(Client *c);
 static void updatetitle(Client *c);
 static void updatewmhints(Client *c);
-//static void view(const Arg *arg);
 static void tagnumview(void);
 static void viewrightwrap(const Arg *arg);
 static void viewleftwrap(const Arg *arg);
@@ -380,7 +375,6 @@ arrange(Monitor *m)
 void
 arrangemon(Monitor *m)
 {
-	//strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
 	if (layouts[m->taglt[m->seltag]].arrange)
 		layouts[m->taglt[m->seltag]].arrange(m);
 }
@@ -698,19 +692,12 @@ dirtomon(int dir)
 void
 drawbar(Monitor *m)
 {
-	int x, y, w, sw = 0;
+	int x, y, w = 0;
 	int boxw = 19;
 	int boxh = 13;
-	unsigned int i, occ = 0, urg = 0;
+	unsigned int i;
 	Client *c;
 	unsigned int numC[hsize * vsize] = {0};
-
-	/* draw status first so it can be overdrawn by tags later */
-	//if (m == selmon) { /* status is only drawn on selected monitor */
-	//	drw_setscheme(drw, scheme[SchemeNorm]);
-	//	sw = TEXTW(stext) - lrpad / 2; /* no right padding so status text hugs the corner */
-	//	drw_text(drw, m->ww - sw, 0, sw, bh, lrpad / 2 - 2, stext, 0);
-	//}
 
 	for (c = m->clients; c; c = c->next) {
 		numC[c->tag]++;
@@ -720,7 +707,7 @@ drawbar(Monitor *m)
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
 		drw_setscheme(drw, scheme[m->seltag == i ? SchemeSel : SchemeNorm]);
-		drw_text(drw, x, y, w, bh/vsize, lrpad / 2, tags[i], urg & 1 << i);
+		drw_text(drw, x, y, w, bh/vsize, lrpad / 2, tags[i], False);
 		if (selmon->taglt[i] && numC[i]) {
 			drw_rect(drw, x + 1, y + 1, boxw + 2, boxh + 2,
 			         m == selmon && selmon->sel && selmon->sel->tag == i,
@@ -761,21 +748,6 @@ drawbar(Monitor *m)
 			y = y + bh / vsize;
 		}
 	}
-	//w = blw = TEXTW(m->ltsymbol);
-	//drw_setscheme(drw, scheme[SchemeNorm]);
-	//x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
-
-	//if ((w = m->ww - sw - x) > bh) {
-	//	if (m->sel) {
-	//		drw_setscheme(drw, scheme[m == selmon ? SchemeSel : SchemeNorm]);
-	//		drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
-	//		if (m->sel->isfloating)
-	//			drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
-	//	} else {
-	//		drw_setscheme(drw, scheme[SchemeNorm]);
-	//		drw_rect(drw, x, 0, w, bh, 1, 1);
-	//	}
-	//}
 	drw_map(drw, m->barwin, 0, 0, barwidth, bh);
 }
 
@@ -1798,41 +1770,57 @@ tagupwrap(const Arg *arg)
 void
 tagright(const Arg *arg)
 {
-	if (selmon->tagnumh < hsize - 1) {
-		selmon->tagnumh++;
-		tagnumtag();
+	if (arg->i) {
+		tagrightwrap(arg);
+	} else {
+		if (selmon->tagnumh < hsize - 1) {
+			selmon->tagnumh++;
+			tagnumtag();
+		}
+		showbarnow();
 	}
-	showbarnow();
 }
 
 void
 tagleft(const Arg *arg)
 {
-	if (selmon->tagnumh > 0) {
-		selmon->tagnumh--;
-		tagnumtag();
+	if (arg->i) {
+		tagleftwrap(arg);
+	} else {
+		if (selmon->tagnumh > 0) {
+			selmon->tagnumh--;
+			tagnumtag();
+		}
+		showbarnow();
 	}
-	showbarnow();
 }
 
 void
 tagdown(const Arg *arg)
 {
-	if (selmon->tagnumv < vsize - 1) {
-		selmon->tagnumv++;
-		tagnumtag();
+	if (arg->i) {
+		tagdownwrap(arg);
+	} else {
+		if (selmon->tagnumv < vsize - 1) {
+			selmon->tagnumv++;
+			tagnumtag();
+		}
+		showbarnow();
 	}
-	showbarnow();
 }
 
 void
 tagup(const Arg *arg)
 {
-	if (selmon->tagnumv > 0) {
-		selmon->tagnumv--;
-		tagnumtag();
+	if (arg->i) {
+		tagupwrap(arg);
+	} else {
+		if (selmon->tagnumv > 0) {
+			selmon->tagnumv--;
+			tagnumtag();
+		}
+		showbarnow();
 	}
-	showbarnow();
 }
 
 void
@@ -1870,15 +1858,6 @@ tile(Monitor *m)
 }
 
 void
-togglebar(const Arg *arg)
-{
-	selmon->showbar = !selmon->showbar;
-	updatebarpos(selmon);
-	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, barwidth, bh);
-	arrange(selmon);
-}
-
-void
 showbarnow(void)
 {
 	selmon->showbar = True;
@@ -1900,33 +1879,6 @@ togglefloating(const Arg *arg)
 		       selmon->sel->w, selmon->sel->h, 0);
 	arrange(selmon);
 }
-
-//void
-//toggletag(const Arg *arg)
-//{
-//	unsigned int newtags;
-//
-//	if (!selmon->sel)
-//		return;
-//	newtags = selmon->sel->tags ^ (arg->ui & TAGMASK);
-//	if (newtags) {
-//		selmon->sel->tags = newtags;
-//		focus(NULL);
-//		arrange(selmon);
-//	}
-//}
-
-//void
-//toggleview(const Arg *arg)
-//{
-//	unsigned int newtagset = selmon->tagset[selmon->seltags] ^ (arg->ui & TAGMASK);
-//
-//	if (newtagset) {
-//		selmon->tagset[selmon->seltags] = newtagset;
-//		focus(NULL);
-//		arrange(selmon);
-//	}
-//}
 
 void
 unfocus(Client *c, int setfocus)
@@ -2007,9 +1959,7 @@ updatebarpos(Monitor *m)
 	m->wy = m->my;
 	m->wh = m->mh;
 	if (m->showbar) {
-		//m->wh -= bh;
 		m->by = m->topbar ? m->wy : m->wy + m->wh;
-		//m->wy = m->topbar ? m->wy + bh : m->wy;
 	} else
 		m->by = -bh;
 }
@@ -2217,18 +2167,6 @@ updatewmhints(Client *c)
 	}
 }
 
-//void
-//view(const Arg *arg)
-//{
-//	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
-//		return;
-//	selmon->seltags ^= 1; /* toggle sel tagset */
-//	if (arg->ui & TAGMASK)
-//		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
-//	focus(NULL);
-//	arrange(selmon);
-//}
-
 void
 tagnumview(void)
 {
@@ -2285,41 +2223,57 @@ viewupwrap(const Arg *arg)
 void
 viewright(const Arg *arg)
 {
-	if (selmon->tagnumh < hsize - 1) {
-		selmon->tagnumh++;
-		tagnumview();
+	if (arg->i) {
+		viewrightwrap(arg);
+	} else {
+		if (selmon->tagnumh < hsize - 1) {
+			selmon->tagnumh++;
+			tagnumview();
+		}
+		showbarnow();
 	}
-	showbarnow();
 }
 
 void
 viewleft(const Arg *arg)
 {
-	if (selmon->tagnumh > 0) {
-		selmon->tagnumh--;
-		tagnumview();
+	if (arg->i) {
+		viewleftwrap(arg);
+	} else {
+		if (selmon->tagnumh > 0) {
+			selmon->tagnumh--;
+			tagnumview();
+		}
+		showbarnow();
 	}
-	showbarnow();
 }
 
 void
 viewdown(const Arg *arg)
 {
-	if (selmon->tagnumv < vsize - 1) {
-		selmon->tagnumv++;
-		tagnumview();
+	if (arg->i) {
+		viewdownwrap(arg);
+	} else {
+		if (selmon->tagnumv < vsize - 1) {
+			selmon->tagnumv++;
+			tagnumview();
+		}
+		showbarnow();
 	}
-	showbarnow();
 }
 
 void
 viewup(const Arg *arg)
 {
-	if (selmon->tagnumv > 0) {
-		selmon->tagnumv--;
-		tagnumview();
+	if (arg->i) {
+		viewupwrap(arg);
+	} else {
+		if (selmon->tagnumv > 0) {
+			selmon->tagnumv--;
+			tagnumview();
+		}
+		showbarnow();
 	}
-	showbarnow();
 }
 
 Client *
