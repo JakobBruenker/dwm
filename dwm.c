@@ -629,9 +629,9 @@ createmon(void)
 	m->nmaster = nmaster;
 	m->showbar = showbar;
 	m->topbar = topbar;
-	m->tagnumh = 0;
-	m->tagnumv = 0;
-	m->seltag = 0;
+	m->tagnumh = 1;
+	m->tagnumv = 1;
+	m->seltag = hsize + 1;
 	m->lt[0] = &layouts[0];
 	m->lt[1] = &layouts[1 % LENGTH(layouts)];
 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
