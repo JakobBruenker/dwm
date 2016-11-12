@@ -696,8 +696,8 @@ void
 drawbar(Monitor *m)
 {
 	int x, y, w, sw = 0;
-	int boxs = drw->fonts->h / 9;
-	int boxw = drw->fonts->h / 6 + 2;
+	int boxw = 19;
+	int boxh = 13;
 	unsigned int i, occ = 0, urg = 0;
 	Client *c;
 	unsigned int numC[hsize * vsize] = {0};
@@ -718,10 +718,37 @@ drawbar(Monitor *m)
 		w = TEXTW(tags[i]);
 		drw_setscheme(drw, scheme[m->seltag == i ? SchemeSel : SchemeNorm]);
 		drw_text(drw, x, y, w, bh/vsize, lrpad / 2, tags[i], urg & 1 << i);
-		if (numC[i] > 0)
-			drw_rect(drw, x + boxs, boxs + y, boxw, boxw,
+		if (numC[i] == 1) {
+			drw_rect(drw, x + 2, y + 2, boxw, boxh,
 			         m == selmon && selmon->sel && selmon->sel->tag == i,
 			         False);
+		} else if (numC[i] > 1) {
+			drw_rect(drw, x + 2, y + 2, 8, boxh,
+			         m == selmon && selmon->sel && selmon->sel->tag == i,
+			         False);
+			if (numC[i] == 2) {
+			drw_rect(drw, x + 12, y + 2, 9, boxh,
+			         m == selmon && selmon->sel && selmon->sel->tag == i,
+			         False);
+			} else if (numC[i] == 3) {
+				drw_rect(drw, x + 12, y + 2, 9, 6,
+					 m == selmon && selmon->sel && selmon->sel->tag == i,
+					 False);
+				drw_rect(drw, x + 12, y + 10, 9, 5,
+					 m == selmon && selmon->sel && selmon->sel->tag == i,
+					 False);
+			} else {
+				drw_rect(drw, x + 12, y + 2, 9, 3,
+					 m == selmon && selmon->sel && selmon->sel->tag == i,
+					 False);
+				drw_rect(drw, x + 12, y + 7, 9, 3,
+					 m == selmon && selmon->sel && selmon->sel->tag == i,
+					 False);
+				drw_rect(drw, x + 12, y + 12, 9, 3,
+					 m == selmon && selmon->sel && selmon->sel->tag == i,
+					 False);
+			}
+		}
 		x = (x + w) % (w * hsize);
 		if (x == 0) {
 			y = y + bh/5;
